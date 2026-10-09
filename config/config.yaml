@@ -1,0 +1,115 @@
+# FinAgent-SLM Configuration
+# Autonomous Agentic AI for Real-Time Tax Fraud Detection
+
+project:
+  name: "FinAgent-SLM"
+  version: "1.0.0"
+  description: "Autonomous Agentic AI for Real-Time Tax Fraud Detection and Audit Trail Generation"
+  domain: "Ministry of Finance & Banking PSUs"
+
+model:
+  base_model: "microsoft/phi-2"  # 2.7B param SLM
+  max_seq_length: 2048
+  dtype: "float16"
+  
+  training:
+    epochs: 10
+    batch_size: 32
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    scheduler: "cosine"
+    warmup_steps: 100
+    gradient_clip: 1.0
+    
+  fine_tuning:
+    method: "lora"
+    lora_r: 16
+    lora_alpha: 32
+    lora_dropout: 0.1
+    target_modules: ["q_proj", "v_proj", "k_proj", "o_proj"]
+    
+  quantization:
+    enabled: true
+    method: "gptq"  # gptq, awq, or dynamic
+    bits: 4
+    group_size: 128
+    desc_act: true
+
+datasets:
+  primary:
+    name: "PaySim"
+    source: "kaggle"
+    description: "Synthetic financial transactions for fraud detection (6M+ records)"
+    url: "https://www.kaggle.com/datasets/ealaxi/paysim1"
+  
+  secondary:
+    - name: "Bank Account Fraud (BAF)"
+      source: "kaggle"
+      description: "Bank account opening fraud with temporal dynamics"
+      url: "https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022"
+    - name: "IEEE-CIS Fraud Detection"
+      source: "kaggle" 
+      description: "E-commerce transaction fraud from Vesta Corporation (590K records)"
+      url: "https://www.kaggle.com/c/ieee-fraud-detection"
+    - name: "Credit Card Fraud (Kaggle)"
+      source: "kaggle"
+      description: "European cardholder transactions with PCA features (284K records)"
+      url: "https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud"
+    - name: "IBM AMLSim"
+      source: "github"
+      description: "Anti-Money Laundering multi-agent simulation"
+      url: "https://github.com/IBM/AMLSim"
+    - name: "Synthetic Tax Return Dataset"
+      source: "mendeley"
+      description: "Simulated tax returns with embedded fraud labels"
+      url: "https://data.mendeley.com"
+
+agents:
+  orchestrator:
+    name: "FinAgent-Orchestrator"
+    description: "Central coordinator for multi-agent fraud detection"
+    pattern: "ReAct"
+    
+  fraud_detector:
+    name: "FraudDetectionAgent"
+    description: "Real-time transaction analysis and anomaly scoring"
+    tools: ["transaction_analyzer", "pattern_matcher", "risk_scorer"]
+    
+  audit_agent:
+    name: "AuditTrailAgent"
+    description: "Generates compliance-ready audit documentation"
+    tools: ["report_generator", "evidence_collector", "timeline_builder"]
+    
+  tax_analyzer:
+    name: "TaxAnalysisAgent"
+    description: "Analyzes tax patterns and identifies evasion signals"
+    tools: ["tax_calculator", "anomaly_detector", "regulatory_checker"]
+
+performance:
+  edge_deployment:
+    target_latency_ms: 100
+    max_memory_gb: 8
+    target_throughput_tps: 1000
+  
+  quantization_matrix:
+    - precision: "FP32"
+      model_size_gb: 10.8
+      inference_ms: 450
+      accuracy_pct: 99.2
+    - precision: "FP16"
+      model_size_gb: 5.4
+      inference_ms: 230
+      accuracy_pct: 99.1
+    - precision: "INT8"
+      model_size_gb: 2.7
+      inference_ms: 120
+      accuracy_pct: 98.8
+    - precision: "INT4"
+      model_size_gb: 1.35
+      inference_ms: 65
+      accuracy_pct: 97.9
+
+ui:
+  framework: "streamlit"
+  theme: "dark"
+  port: 8501
